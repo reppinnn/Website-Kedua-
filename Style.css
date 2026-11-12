@@ -2,22 +2,30 @@
     box-sizing: border-box;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     margin: 0;
-    padding: 12px;
-    background-color: green; /* bingkai biru */
+    padding: 0;
+    background-color: #f2f2f2;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .frame {
     position: relative;
-    min-height: calc(100vh - 24px);
+    min-height: 100vh;
     background-color: #f2f2f2;
-    overflow: hidden;
+    overflow-x: clip; /* clip (bukan hidden) supaya menu bisa tetap menempel saat scroll */
 }
 
-/* ===== Topbar: logo kiri, nav tengah, Instagram kanan ===== */
+/* ===== Topbar: logo kiri, nav tengah, Contact Me kanan ===== */
 .topbar {
+    position: sticky; /* tetap di atas saat scroll */
+    top: 0;
+    z-index: 100;
+    background-color: #f2f2f2; /* supaya konten tidak terlihat tembus di belakang menu */
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
@@ -73,7 +81,7 @@ body {
                 height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Instagram kanan atas */
+/* Tombol kanan atas (Contact Me) */
 .ig {
     justify-self: end;
     display: flex;
@@ -114,12 +122,20 @@ body {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    margin-top: 90px;
-    padding: 0 20px 60px;
+    margin-top: 0;
+    padding: 90px 20px 60px;
     color: #111;
 }
 
+/* ===== Halaman (tiap bagian ke bawah) ===== */
+.halaman {
+    min-height: 100vh;
+    scroll-margin-top: 0;
+}
+
 .subjudul {
+    position: relative;
+    top: -50px; /* naikkan tulisan (makin besar angkanya, makin naik) */
     margin: 0 0 8px;
     font-family: 'Playfair Display', Georgia, serif;
     font-size: clamp(18px, 2.2vw, 28px);
@@ -176,35 +192,370 @@ body {
     font-size: 14px;
 }
 
-/* ===== Galeri foto di bawah nama ===== */
-.galeri {
+/* ===== Gambar mengitari nama ===== */
+.orbit {
+    --ukuran: clamp(70px, 13vw, 170px);
+    position: relative;
     display: flex;
+    justify-content: center;
+    /* ruang kosong supaya gambar tidak keluar dari bingkai */
+    padding: calc(var(--ukuran) * 1.1) calc(var(--ukuran) * 0.9);
+    max-width: 100%;
+}
+
+.orbit h1 {
+    position: relative;
+    z-index: 5; /* teks di tengah: gambar di belakang lewat di bawah, di depan lewat di atas */
+}
+
+.mengitari {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--ukuran);
+    height: var(--ukuran);
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    will-change: transform;
+    pointer-events: none;
+}
+
+/* ===== Elemen umum About & Connect ===== */
+.about,
+.connect {
+    position: relative;
+    padding: 120px clamp(20px, 6vw, 90px) 60px;
+    color: #111;
+}
+
+.label {
+    margin: 0 0 14px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: green;
+}
+
+.about h2,
+.connect h2 {
+    margin: 0;
+    line-height: 0.95;
+    font-size: clamp(44px, 7vw, 96px);
+    text-transform: uppercase;
+}
+
+.about h2 .tebal,
+.connect h2 .tebal {
+    font-family: 'Anton', Impact, sans-serif;
+    font-weight: 400;
+    letter-spacing: -1px;
+}
+
+.about h2 .tipis,
+.connect h2 .tipis {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 400;
+    letter-spacing: -2px;
+    color: green;
+}
+
+/* Muncul halus saat di-scroll */
+.reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.reveal.tampil {
+    opacity: 1;
+    transform: none;
+}
+
+/* ===== About Me ===== */
+.about {
+    display: grid;
+    grid-template-columns: minmax(240px, 400px) 1fr;
+    gap: clamp(30px, 6vw, 90px);
     align-items: center;
     justify-content: center;
-    gap: 24px;
+}
+
+.about-foto {
+    position: relative;
+    aspect-ratio: 3 / 4;
+}
+
+.about-foto::before {
+    content: "";
+    position: absolute;
+    inset: 18px -18px -18px 18px;
+    background-color: green;
+    border-radius: 12px;
+}
+
+.about-foto img {
+    position: relative;
     width: 100%;
-    max-width: 1100px;
-    margin-top: 40px;
-}
-
-.foto {
-    display: block;
-    height: auto;
+    height: 100%;
     object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
 }
 
-.foto.kiri {
-    width: 28%;
-    transform: rotate(-3deg);
+.stiker {
+    position: absolute;
+    top: -14px;
+    left: -14px;
+    padding: 6px 12px;
+    background-color: #fff;
+    border-radius: 4px;
+    font-family: 'Caveat', cursive;
+    font-size: 22px;
+    color: green;
+    transform: rotate(-6deg);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
-.foto.tengah {
-    width: 38%; /* foto utama di tengah, paling besar */
+.isi {
+    max-width: 52ch;
+    margin: 22px 0 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(16px, 1.5vw, 20px);
+    line-height: 1.7;
 }
 
-.foto.kanan {
-    width: 28%;
-    transform: rotate(3deg);
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 24px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.chips li {
+    padding: 7px 14px;
+    background-color: #fff;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.chips li:first-child {
+    background-color: green;
+    color: #fff;
+}
+
+.fakta {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    justify-content: start;
+    gap: 0 36px;
+    margin: 32px 0 0;
+    padding-top: 20px;
+    border-top: 2px solid #111;
+}
+
+.fakta dt {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: green;
+}
+
+.fakta dd {
+    margin: 4px 0 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 18px;
+}
+
+/* ===== About Me: latar hijau ===== */
+.about {
+    background-color: green;
+    color: #fff;
+}
+
+.about .label {
+    color: #c8f7c8;
+}
+
+.about h2 .tebal {
+    color: #fff;
+}
+
+.about h2 .tipis {
+    color: #c8f7c8;
+}
+
+.about-foto::before {
+    background-color: #004d00; /* blok di belakang foto: hijau tua */
+}
+
+.chips li {
+    color: #111;
+}
+
+.chips li:first-child {
+    background-color: #004d00;
+    color: #fff;
+}
+
+.fakta {
+    border-top-color: #fff;
+}
+
+.fakta dt {
+    color: #c8f7c8;
+}
+
+/* ===== Connect ===== */
+.connect {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.connect-isi {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.daftar {
+    margin-top: 40px;
+    border-top: 2px solid #111;
+}
+
+.daftar a {
+    display: grid;
+    grid-template-columns: 50px 1fr auto 44px;
+    align-items: center;
+    gap: 12px;
+    padding: 22px 14px;
+    border-bottom: 2px solid #111;
+    color: #111;
+    text-decoration: none;
+    transition: background-color 0.25s, color 0.25s, padding-left 0.25s;
+}
+
+.daftar .no {
+    font-size: 12px;
+    font-weight: 700;
+    color: green;
+    transition: color 0.25s;
+}
+
+.daftar .nama {
+    font-family: 'Anton', Impact, sans-serif;
+    font-size: clamp(26px, 4vw, 44px);
+    text-transform: uppercase;
+}
+
+.daftar .ket {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 16px;
+}
+
+.daftar .panah {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    background-color: green;
+    color: #fff;
+    font-size: 18px;
+    transition: background-color 0.25s, color 0.25s;
+}
+
+.daftar a:hover {
+    background-color: green;
+    color: #fff;
+    padding-left: 24px;
+}
+
+.daftar a:hover .no {
+    color: #fff;
+}
+
+.daftar a:hover .panah {
+    background-color: #fff;
+    color: green;
+}
+
+.kucing {
+    position: absolute;
+    right: clamp(20px, 6vw, 90px);
+    top: 130px;
+    width: clamp(60px, 9vw, 120px);
+    opacity: 0.9;
+    transform: rotate(8deg);
+    z-index: 20;
+    cursor: grab;
+    touch-action: none;      /* supaya bisa digeser di HP tanpa ikut men-scroll */
+    user-select: none;
+    -webkit-user-drag: none;
+    transition: transform 0.15s, opacity 0.15s;
+}
+
+.kucing.digeser {
+    cursor: grabbing;
+    opacity: 1;
+    transform: rotate(-4deg) scale(1.1);
+}
+
+.kaki {
+    margin: 60px 0 0;
+    text-align: center;
+    font-size: 12px;
+    color: #777;
+}
+
+/* ===== Tombol suara (kanan bawah) ===== */
+.tombol-suara {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background-color: #fff;
+    border: 0;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #111;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.tombol-suara::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background-color: green;
+}
+
+.tombol-suara[aria-pressed="false"]::before {
+    background-color: #999;
+}
+
+.tombol-suara:hover {
+    background-color: green;
+    color: #fff;
+}
+
+.tombol-suara:hover::before {
+    background-color: #fff;
 }
 
 /* ===== HP ===== */
@@ -218,14 +569,26 @@ body {
         grid-row: 2;
         justify-self: center;
     }
-    .galeri {
-        flex-direction: column;
-        gap: 16px;
+
+    .about {
+        grid-template-columns: 1fr;
+        padding-top: 130px;
     }
-    .foto.kiri,
-    .foto.tengah,
-    .foto.kanan {
-        width: 80%;
-        transform: none;
+    .about-foto {
+        max-width: 280px;
+        margin: 0 auto 10px;
+    }
+    .fakta {
+        grid-template-columns: 1fr 1fr;
+        gap: 16px 24px;
+    }
+    .daftar a {
+        grid-template-columns: 30px 1fr 34px;
+    }
+    .daftar .ket {
+        display: none;
+    }
+    .kucing {
+        top: 140px;
     }
 }

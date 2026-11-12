@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sir Puski Ladudi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Caveat:wght@700&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="Style.css">
+</head>
+<body>
+    <div class="frame">
+
+        <header class="topbar">
+            <a class="logo" href="#home">Puski</a>
+
+            <nav class="navbar">
+                <a href="#home" data-target="home" class="aktif">Home</a>
+                <a href="#about" data-target="about">About Me</a>
+                <a href="#connect" data-target="connect">Connect</a>
+            </nav>
+
+            <a class="ig" href="mailto:ramadaniareef@gmail.com">Contact Me</a>
+        </header>
+
+        <main class="hero halaman" id="home">
+            <div class="orbit" id="orbit">
+                <h1>
+                    <span class="kata tebal">SIR</span>
+                    <span class="kata tebal">PUSKI</span><br>
+                    <span class="kata tipis">LADUDI</span>
+                </h1>
+
+                <!-- Gambar yang bergerak mengitari nama -->
+                <img class="mengitari" src="image folder/Ben.png"  alt="Ben">
+                <img class="mengitari" src="image folder/Ben2.jpg" alt="Foto 1">
+                <img class="mengitari" src="image folder/Ben3.jpg" alt="Foto 2">
+            </div>
+
+            <a class="lebih" href="#about">
+                <span class="teks">Hobi saya adalah mencoba hal-hal baru</span>
+                <span class="panah">&darr;</span>
+            </a>
+        </main>
+
+        <!-- ===== Halaman 2: About Me ===== -->
+        <section class="halaman about" id="about">
+            <div class="about-foto reveal">
+                <img src="image folder/Ben.png" alt="Potret Sir Puski">
+                <span class="stiker">Est. 2026</span>
+            </div>
+
+            <div class="about-teks reveal">
+                <p class="label">01 &mdash; About Me</p>
+                <h2>
+                    <span class="tebal">HALO,</span>
+                    <span class="tebal">SAYA</span><br>
+                    <span class="tipis">Puski</span>
+                </h2>
+                <p class="isi">
+                    Saya Sir Puski Ladudi. Hobi saya adalah mencoba hal-hal baru &mdash;
+                    mulai dari menggambar, mengulik desain, sampai menjelajahi ide-ide
+                    aneh yang muncul tiba-tiba. Bagi saya, setiap percobaan adalah cerita baru.
+                </p>
+
+                <ul class="chips">
+                    <li>Seni &amp; Ilustrasi</li>
+                    <li>Desain</li>
+                    <li>Coba Hal Baru</li>
+                    <li>Warna Hijau</li>
+                </ul>
+
+                <dl class="fakta">
+                    <div><dt>Nama</dt><dd>Sir Puski Ladudi</dd></div>
+                    <div><dt>Hobi</dt><dd>Mencoba hal baru</dd></div>
+                    <div><dt>Warna</dt><dd>Hijau</dd></div>
+                </dl>
+            </div>
+        </section>
+
+        <!-- ===== Halaman 3: Connect ===== -->
+        <section class="halaman connect" id="connect">
+            <div class="connect-isi reveal">
+                <p class="label">02 &mdash; Connect</p>
+                <h2>
+                    <span class="tebal">CONNECT</span><br>
+                    <span class="tipis">with me</span>
+                </h2>
+
+                <div class="daftar">
+                    <a href="https://www.instagram.com/repajahhh?obrf=YjcxM2N4dXg5ZjJn" target="_blank" rel="noopener">
+                        <span class="no">01</span>
+                        <span class="nama">Instagram</span>
+                        <span class="ket">@repajahhh</span>
+                        <span class="panah">&nearr;</span>
+                    </a>
+                    <a href="https://github.com/reppinnn" target="_blank" rel="noopener">
+                        <span class="no">02</span>
+                        <span class="nama">GitHub</span>
+                        <span class="ket">@reppinnn</span>
+                        <span class="panah">&nearr;</span>
+                    </a>
+                    <a href="https://open.spotify.com/user/31i5re24fhbvszrjffav6gswbzdm?si=f546435f278c4024" target="_blank" rel="noopener">
+                        <span class="no">03</span>
+                        <span class="nama">Spotify</span>
+                        <span class="ket">Callatero</span>
+                        <span class="panah">&nearr;</span>
+                    </a>
+                </div>
+            </div>
+
+            <img class="kucing" id="kucing" src="image folder/Miaw.png" alt="Kucing yang bisa digeser" draggable="false">
+            <p class="kaki">&copy; 2026 Sir Puski Ladudi</p>
+        </section>
+
+    </div>
+      <button class="tombol-suara" id="tombol-suara" type="button" aria-pressed="true">Suara: ON</button>
+
+    <script src="script.js"></script>       
+</body>
+</html>
