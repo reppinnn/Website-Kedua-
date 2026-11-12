@@ -1,7 +1,5 @@
 /* ===== Suara (dibuat langsung dengan Web Audio, tanpa file audio) ===== */
 let audio = null;          // { c: AudioContext, m: master gain, buf: buffer noise }
-let suaraNyala = true;
-try { if (localStorage.getItem('suara') === 'off') suaraNyala = false; } catch (e) {}
 
 function bangunAudio(c) {
     const m = c.createGain();
@@ -33,7 +31,7 @@ function siapkanAudio() {
 );
 
 function bisaBunyi() {
-    return suaraNyala && audio && audio.c.state === 'running';
+    return audio && audio.c.state === 'running';
 }
 
 // Ledakan noise pendek yang difilter (untuk bagian "klik/tik")
@@ -74,44 +72,9 @@ function sintesisShutter(a, t) {
     nada(a, t2, 1100, 250, 0.05, 0.22, 'triangle');
 }
 
-// Suara keyboard mekanik "thocky": bodi dalam + tik pendek
-// (sekarang hanya dipakai oleh tombol Suara ON/OFF)
-function sintesisThock(a, t, kuat = 1) {
-    const v = 0.92 + Math.random() * 0.16; // sedikit acak biar tidak monoton
-    nada(a, t, 260 * v, 95 * v, 0.11, 0.7 * kuat);
-    nada(a, t, 140 * v, 70 * v, 0.16, 0.45 * kuat);
-    noise(a, t, 0.025, 'lowpass', 1800, 0.7, 0.35 * kuat);
-    noise(a, t, 0.012, 'bandpass', 3200, 1, 0.12 * kuat);
-    noise(a, t + 0.018, 0.03, 'lowpass', 700, 0.7, 0.3 * kuat); // bottom-out
-}
-
 function shutter() {
     if (bisaBunyi()) sintesisShutter(audio, audio.c.currentTime);
 }
-
-function thock(kuat = 1) {
-    if (bisaBunyi()) sintesisThock(audio, audio.c.currentTime, kuat);
-}
-
-/* Tombol nyala/mati suara */
-const tombolSuara = document.getElementById('tombol-suara');
-
-function perbaruiTombol() {
-    tombolSuara.textContent = 'Suara: ' + (suaraNyala ? 'ON' : 'OFF');
-    tombolSuara.setAttribute('aria-pressed', String(suaraNyala));
-}
-
-tombolSuara.addEventListener('click', () => {
-    suaraNyala = !suaraNyala;
-    try { localStorage.setItem('suara', suaraNyala ? 'on' : 'off'); } catch (e) {}
-    perbaruiTombol();
-    if (suaraNyala) {
-        const a = siapkanAudio();
-        if (a) a.c.resume().then(() => thock(1));
-    }
-});
-
-perbaruiTombol();
 
 /* ===== Efek kedip judul ===== */
 // Kata-kata sudah dipisah di HTML (span.kata), jadi gaya tebal/tipis tetap terjaga
@@ -283,42 +246,135 @@ window.addEventListener('load', () => {
     requestAnimationFrame(gambarOrbit);
 });
 
-/* ===== Kucing di halaman 3 bisa digeser dengan kursor / jari ===== */
+/* ===== Kucing astronot: melayang bebas, bisa ditangkap dengan kursor / jari ===== */
 const kucing = document.getElementById('kucing');
 const halamanConnect = document.getElementById('connect');
 
 if (kucing && halamanConnect) {
-    let geser = null; // { dx, dy } selisih antara kursor dan pojok kucing
+    const JELAJAH = 42;      // kecepatan melayang santai (px per detik)
+    const MAKS_LEMPAR = 900; // batas kecepatan saat kucing dilempar
 
+    let x = 0, y = 0;              // posisi pojok kiri-atas kucing di dalam halaman
+    let vx = 0, vy = 0;            // kecepatan (px/detik)
+    let rot = 0, vrot = 0;         // putaran (derajat, derajat/detik)
+    let siap = false;
+    let terlihat = true;
+    let tertangkap = false;
+    let geser = null;              // selisih kursor dengan pojok kucing
+    let lacak = { x: 0, y: 0, t: 0, vx: 0, vy: 0 }; // untuk menghitung kecepatan lemparan
+    let waktuLama = performance.now();
+
+    new IntersectionObserver((e) => { terlihat = e[0].isIntersecting; }).observe(halamanConnect);
+
+    const batas = () => ({
+        maxX: Math.max(0, halamanConnect.clientWidth - kucing.offsetWidth),
+        maxY: Math.max(0, halamanConnect.clientHeight - kucing.offsetHeight),
+    });
+    const jepit = (n, lo, hi) => Math.min(Math.max(n, lo), hi);
+
+    function terapkan(waktu) {
+        // sedikit naik-turun supaya terasa tanpa gravitasi
+        const goyang = tertangkap ? 0 : Math.sin(waktu / 900) * 6;
+        const skala = tertangkap ? 1.1 : 1;
+        kucing.style.transform =
+            `translate(${x}px, ${y + goyang}px) rotate(${rot}deg) scale(${skala})`;
+    }
+
+    function awal() {
+        const { maxX } = batas();
+        x = maxX - 20;
+        y = 130;
+        const arah = Math.random() * Math.PI * 2;
+        vx = Math.cos(arah) * JELAJAH;
+        vy = Math.sin(arah) * JELAJAH;
+        vrot = (Math.random() < 0.5 ? -1 : 1) * (10 + Math.random() * 10);
+        rot = 8;
+        siap = true;
+    }
+
+    function putar(waktu) {
+        const dt = Math.min((waktu - waktuLama) / 1000, 0.05);
+        waktuLama = waktu;
+
+        if (!siap && kucing.offsetWidth > 0 && kucing.offsetHeight > 0) awal();
+
+        if (siap && terlihat && !tertangkap) {
+            const { maxX, maxY } = batas();
+            x += vx * dt;
+            y += vy * dt;
+            rot += vrot * dt;
+
+            // memantul pelan di tepi halaman
+            if (x < 0)    { x = 0;    vx =  Math.abs(vx); vrot = -vrot * 0.9; }
+            if (x > maxX) { x = maxX; vx = -Math.abs(vx); vrot = -vrot * 0.9; }
+            if (y < 0)    { y = 0;    vy =  Math.abs(vy); }
+            if (y > maxY) { y = maxY; vy = -Math.abs(vy); }
+
+            // setelah dilempar, perlahan kembali ke kecepatan melayang santai
+            const laju = Math.hypot(vx, vy) || 1;
+            const baru = laju + (JELAJAH - laju) * Math.min(1, dt * 1.2);
+            vx *= baru / laju;
+            vy *= baru / laju;
+
+            // putaran juga kembali tenang
+            const tenang = Math.sign(vrot || 1) * 14;
+            vrot += (tenang - vrot) * Math.min(1, dt * 0.8);
+        }
+
+        if (siap) terapkan(waktu);
+        requestAnimationFrame(putar);
+    }
+    requestAnimationFrame(putar);
+
+    // ---- Menangkap kucing ----
     kucing.addEventListener('pointerdown', (e) => {
-        const k = kucing.getBoundingClientRect();
         const h = halamanConnect.getBoundingClientRect();
-
-        // ganti posisi dari "right" ke "left" supaya mudah dihitung
-        kucing.style.left = (k.left - h.left) + 'px';
-        kucing.style.top = (k.top - h.top) + 'px';
-        kucing.style.right = 'auto';
-
-        geser = { dx: e.clientX - k.left, dy: e.clientY - k.top };
+        // posisi sebenarnya (tanpa goyangan & putaran) diambil dari x, y
+        geser = { dx: e.clientX - h.left - x, dy: e.clientY - h.top - y };
+        tertangkap = true;
+        vx = vy = 0;
+        lacak = { x: e.clientX, y: e.clientY, t: performance.now(), vx: 0, vy: 0 };
         kucing.setPointerCapture(e.pointerId);
         kucing.classList.add('digeser');
         e.preventDefault();
     });
 
     kucing.addEventListener('pointermove', (e) => {
-        if (!geser) return;
+        if (!tertangkap) return;
         const h = halamanConnect.getBoundingClientRect();
-        const maxX = halamanConnect.clientWidth - kucing.offsetWidth;
-        const maxY = halamanConnect.clientHeight - kucing.offsetHeight;
-        const x = Math.min(Math.max(e.clientX - h.left - geser.dx, 0), maxX);
-        const y = Math.min(Math.max(e.clientY - h.top - geser.dy, 0), maxY);
-        kucing.style.left = x + 'px';
-        kucing.style.top = y + 'px';
+        const { maxX, maxY } = batas();
+        x = jepit(e.clientX - h.left - geser.dx, 0, maxX);
+        y = jepit(e.clientY - h.top - geser.dy, 0, maxY);
+
+        // hitung kecepatan kursor (diperhalus) untuk lemparan
+        const sekarang = performance.now();
+        const dt = (sekarang - lacak.t) / 1000;
+        if (dt > 0.001) {
+            lacak.vx = lacak.vx * 0.6 + ((e.clientX - lacak.x) / dt) * 0.4;
+            lacak.vy = lacak.vy * 0.6 + ((e.clientY - lacak.y) / dt) * 0.4;
+            lacak.x = e.clientX; lacak.y = e.clientY; lacak.t = sekarang;
+        }
     });
 
     const lepas = () => {
-        geser = null;
+        if (!tertangkap) return;
+        tertangkap = false;
         kucing.classList.remove('digeser');
+        // kalau kursor sempat diam sebelum dilepas, kucing tidak ikut terlempar
+        const diam = (performance.now() - lacak.t) > 120;
+        let lx = diam ? 0 : lacak.vx;
+        let ly = diam ? 0 : lacak.vy;
+        const laju = Math.hypot(lx, ly);
+        if (laju > MAKS_LEMPAR) { lx *= MAKS_LEMPAR / laju; ly *= MAKS_LEMPAR / laju; }
+        // dilepas pelan -> tetap melayang santai ke arah terakhir
+        if (laju < JELAJAH) {
+            const a = laju > 1 ? Math.atan2(ly, lx) : Math.random() * Math.PI * 2;
+            lx = Math.cos(a) * JELAJAH; ly = Math.sin(a) * JELAJAH;
+        }
+        vx = lx; vy = ly;
+        vrot = jepit(lx * 0.15, -240, 240) || 14;
+        waktuLama = performance.now();
+        geser = null;
     };
     kucing.addEventListener('pointerup', lepas);
     kucing.addEventListener('pointercancel', lepas);
